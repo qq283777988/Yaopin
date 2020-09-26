@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.WarehouseDao">
+	<resultMap id="warmapper" type="com.guigu.vo.Warehouse">
+		<id column="war_id" property="war_id"></id>
+		<collection property="drugs" javaType="list" ofType="com.guigu.vo.Drug"
+					column="war_id" select="com.guigu.dao.DrugDao.queryDrugBywarid2"
+					fetchType="lazy">
+		</collection>
+	</resultMap>
+    <select id="queryallWarehouseBydruid"  resultMap="warmapper" parameterType="int">
+		select w.* from warehouse w
+		INNER JOIN war_dru wd ON w.war_id=wd.war_id
+		INNER JOIN  drug d on d.dru_id=wd.dru_id
+		where d.dru_id=#{dru_id}
+	</select>
+	<select id="queryWarehouseBywardruid"  resultMap="warmapper" parameterType="int">
+	 SELECT w.* FROM warehouse w INNER JOIN war_dru wd ON w.war_id=wd.war_id  WHERE wd.id=#{id}
+	</select>
+	<select id="queryWarehouse" parameterType="Warehouse" resultMap="warmapper">
+		select * FROM warehouse
+		<where>
+			<if test="war_name!=null"> and war_name like  concat('%',#{war_name},'%')</if>
+		</where>
+		ORDER BY war_id
+	</select>
+	<select id="queryWarehousee" parameterType="Warehouse" resultMap="warmapper">
+		select * FROM warehouse
+	</select>
+	<select id="querycountWarehouse" parameterType="Warehouse" resultType="int">
+		select count(*) FROM warehouse
+		<where>
+			<if test="war_name!=null"> and war_name like  concat('%',#{war_name},'%')</if>
+		</where>
+	</select>
+	<resultMap id="warmapper2" type="com.guigu.vo.Warehouse">
+		<id column="war_id" property="war_id"></id>
+
+	</resultMap>
+	<select id="queryallWarehouseBydruid2"  resultMap="warmapper2" parameterType="int">
+		select w.* from warehouse w
+		INNER JOIN war_dru wd ON w.war_id=wd.war_id
+		INNER JOIN sup_dru d  ON wd.supdru_id=d.id
+          INNER JOIN drug dr  ON dr.dru_id=d.dru_id
+		where d.dru_id=#{dru_id}
+	</select>
+	<select id="queryWarehouseBywardruid2"  resultMap="warmapper2" parameterType="int">
+	 SELECT w.* FROM warehouse w INNER JOIN war_dru wd ON w.war_id=wd.war_id  WHERE wd.id=#{id}
+	</select>
+	<select id="queryWarehouseBywarid"  resultMap="warmapper2" parameterType="int">
+	 SELECT * FROM warehouse   WHERE war_id=#{war_id}
+	</select>
+	<select id="queryallWardruBywid"  resultMap="warmapper2" parameterType="int">
+	SELECT * FROM war_dru
+WHERE supdru_id IN(
+SELECT id FROM sup_dru  sd
+INNER JOIN warehouseout_applyzhong waz ON sd.`dru_id`=waz.dru_id AND sd.`sup_id`=waz.`sup_id`
+INNER JOIN warehouseout_apply wa ON wa.woa_id=waz.woa_id
+INNER JOIN warehouseout w ON w.`woa_id`=wa.`woa_id` WHERE w.`wid`=#{wid})
+
+	</select>
+	<select id="queryWarehouseBywid"  resultMap="warmapper2" parameterType="int">
+	SELECT  wh.war_id FROM warehouse wh
+INNER JOIN warehouseout_applyzhong waz ON wh.war_id=waz.war_id
+INNER JOIN  sup_dru  sd ON sd.sup_id=waz.sup_id AND sd.dru_id=waz.dru_id
+INNER JOIN warehouseout w ON w.woa_id=waz.woa_id WHERE w.wid=#{wid}
+	</select>
+</mapper>

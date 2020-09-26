@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+
+
+    <!-- 自动扫描  需要spring管理的包 -->
+    <context:component-scan base-package="com.guigu">
+        <!-- 指定不扫描得注解-->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 初始化数据源对象；DruidDataSource -->
+    <bean id="druiddataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <!-- 与数据库建立连接的基本信息 -->
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+        <property name="url"
+                  value="jdbc:mysql://localhost:3306/yaopingxiang?characterEncoding=utf-8"></property>
+        <property name="username" value="root"></property>
+        <property name="password" value="123456"></property>
+        <!-- 关于数据库连接池的基本信息 -->
+        <property name="maxActive" value="50"></property>
+        <property name="initialSize" value="5"></property>
+        <property name="minIdle" value="1"></property>
+        <property name="maxWait" value="60000"></property>
+    </bean>
+
+    <!-- 配置SqlSessionFactory的bean-->
+    <bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="druiddataSource"></property>
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+    </bean>
+
+    <!-- 配置mybatis接口的代理对象bean  -->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.guigu.dao"></property>
+    </bean>
+    <!-- 事务-->
+    <!-- 1. 配置事务控制管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="druiddataSource"></property>
+    </bean>
+
+    <!-- 2.配置事务通知-->
+    <tx:advice id="targetAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="add*" isolation="DEFAULT" propagation="REQUIRED" read-only="false"/>
+
+            <tx:method name="update*" isolation="DEFAULT" propagation="REQUIRED" read-only="false"/>
+
+            <tx:method name="delete*" isolation="DEFAULT" propagation="REQUIRED" read-only="false"/>
+
+            <tx:method name="query*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 3.配置事务的切入点-->
+    <aop:config>
+        <aop:pointcut expression="within(com.guigu.service.impl.*)" id="targetPoint"/>
+        <aop:advisor advice-ref="targetAdvice" pointcut-ref="targetPoint"/>
+    </aop:config>
+</beans>

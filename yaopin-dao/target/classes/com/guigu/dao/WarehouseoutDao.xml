@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.WarehouseoutDao">
+    <resultMap id="Warehouseoutmapper" type="com.guigu.vo.Warehouseout">
+        <id column="wid" property="wid"></id>
+        <association property="warehouseoutApply" javaType="com.guigu.vo.WarehouseoutApply"
+                     select="com.guigu.dao.WarehouseoutApplyDao.queryWarehouseoutApplyBywoaid" column="woa_id"
+                     fetchType="lazy">
+        </association>
+        <association property="employee" javaType="com.guigu.vo.Employee"
+                     select="com.guigu.dao.EmployeeDao.queryEmployeeByempid" column="woa_shenid"
+                     fetchType="lazy">
+        </association>
+    </resultMap>
+	<insert id="addWarehouseout" parameterType="Warehouseout" useGeneratedKeys="true" keyColumn="wid" keyProperty="wid">
+		INSERT INTO warehouseout (woa_id,woa_shenid,woa_shentime,woa_zhuang)
+		values
+        <foreach collection="list" item="warehouseouts" index="index" separator="," >
+            (#{warehouseouts.warehouseoutApply.woa_id},#{warehouseouts.employee.emp_id},default ,default )
+        </foreach>
+	</insert>
+    <select id="queryWarehouseout" parameterType="Warehouseout" resultMap="Warehouseoutmapper">
+     SELECT w.* FROM warehouseout w INNER JOIN employee e ON e.emp_id=w.woa_shenid WHERE w.woa_zhuang='待出库'
+    </select>
+    <select id="querycountWarehouseout" parameterType="Warehouseout" resultType="int">
+         SELECT COUNT(1) FROM  warehouseout w INNER JOIN employee e ON e.emp_id=w.woa_shenid WHERE w.woa_zhuang='待出库'
+    </select>
+    <update id="updateWarehouseoutzhuang" parameterType="int">
+        UPDATE warehouseout SET woa_zhuang='出库完成' where wid=#{wid}
+
+
+    </update>
+    <update id="updateWarehouseoutzhuangs" parameterType="int">
+        UPDATE warehouseout SET woa_zhuang='取消出库' where wid=#{wid}
+
+
+    </update>
+</mapper>

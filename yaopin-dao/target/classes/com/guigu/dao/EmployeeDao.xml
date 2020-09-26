@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.guigu.dao.EmployeeDao">
+    <resultMap id="empmapper" type="com.guigu.vo.Employee">
+        <id column="emp_id" property="emp_id"></id>
+        <collection property="roles" javaType="list" ofType="com.guigu.vo.Role"
+                    column="emp_id" select="com.guigu.dao.RoleDao.queryallRolesByempid"
+                    fetchType="lazy">
+        </collection>
+    </resultMap>
+
+    <select id="login" parameterType="employee" resultMap="empmapper">
+    SELECT DISTINCT e.* FROM employee e
+    INNER JOIN emp_rol er ON e.emp_id=er.emp_id
+    INNER JOIN role r ON r.rol_id=er.rol_id
+    WHERE e.emp_state='在职'
+    AND e.emp_user=#{emp_user} AND e.emp_pass=#{emp_pass}
+    </select>
+    <select id="loginaddcha" parameterType="employee" resultMap="empmapper">
+    SELECT * FROM employee
+    WHERE emp_state='在职'
+    AND emp_user=#{emp_user} AND emp_pass=#{emp_pass}
+    </select>
+
+    <select id="queryEmployee" parameterType="employee" resultMap="empmapper">
+        select  DISTINCT e.* from employee e
+        INNER JOIN emp_rol er ON e.emp_id=er.emp_id
+        INNER JOIN role r ON r.rol_id=er.rol_id
+        <where>
+            <if test="emp_name!=null"> and e.emp_name like  concat('%',#{emp_name},'%')</if>
+            <if test="emp_sex!=null &amp;&amp;emp_sex!='请选择'"> and e.emp_sex=#{emp_sex}</if>
+            <if test="emp_state!=null &amp;&amp;emp_state!='请选择'"> and e.emp_state =#{emp_state}</if>
+        </where>
+        ORDER BY e.emp_id
+    </select>
+
+    <select id="querycountEmployee" parameterType="employee" resultType="int">
+        SELECT COUNT(1) FROM (
+        SELECT COUNT(1) FROM employee e
+        LEFT JOIN emp_rol er ON e.emp_id=er.emp_id
+        RIGHT JOIN role r ON r.rol_id=er.rol_id
+        <where>
+
+            <if test="emp_name!=null"> and e.emp_name like  concat('%',#{emp_name},'%')</if>
+            <if test="emp_sex!=null &amp;&amp; emp_sex!='请选择'"> and e.emp_sex=#{emp_sex}</if>
+            <if test="emp_state!=null &amp;&amp;emp_state!='请选择'"> and e.emp_state =#{emp_state}</if>
+        </where>
+        GROUP BY emp_name
+        ) t
+    </select>
+
+    <insert id="addEmployee" parameterType="employee" useGeneratedKeys="true" keyColumn="emp_id" keyProperty="emp_id">
+		INSERT INTO employee(emp_name,emp_sex,emp_birthday,emp_user,emp_pass,emp_state)
+		values (#{emp_name},#{emp_sex},#{emp_birthday},#{emp_user},#{emp_pass},DEFAULT)
+	</insert>
+
+    <update id="deleteEmployee" parameterType="int">
+        UPDATE employee SET emp_state='离职'
+        <foreach collection="array" item="emp_id" open="where emp_id in(" separator="," close=");">
+            #{emp_id}
+        </foreach>
+    </update>
+    <delete id="deleteEmployeerol" parameterType="int">
+        DELETE FROM emp_rol
+        <foreach collection="array" item="emp_id" open="where emp_id in(" separator="," close=");">
+            #{emp_id}
+        </foreach>
+    </delete>
+    <select id="queryEmployeeByempid" parameterType="int" resultMap="empmapper">
+        select  DISTINCT e.* from employee e
+        INNER JOIN emp_rol er ON e.emp_id=er.emp_id
+        INNER JOIN role r ON r.rol_id=er.rol_id
+         where e.emp_id= #{emp_id}
+    </select>
+    <update id="updateEmployee" parameterType="employee">
+
+		update employee set
+		emp_name=#{emp_name},
+        emp_sex=#{emp_sex},
+        emp_birthday=#{emp_birthday},
+        emp_user=#{emp_user},
+        emp_pass=#{emp_pass},
+        emp_state=#{emp_state} where emp_id= #{emp_id}
+
+	</update>
+
+</mapper>

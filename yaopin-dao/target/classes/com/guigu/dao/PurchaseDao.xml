@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.PurchaseDao">
+	<resultMap id="purchasemapper" type="com.guigu.vo.Purchase">
+		<id column="pid" property="pid"></id>
+		<association property="purchaseApply" javaType="com.guigu.vo.PurchaseApply"
+					 select="com.guigu.dao.PurchaseApplyDao.queryPurchaseApplyBypid" column="pid"
+					 fetchType="lazy">
+		</association>
+		<association property="employee" javaType="com.guigu.vo.Employee"
+					 select="com.guigu.dao.EmployeeDao.queryEmployeeByempid" column="pua_shenid"
+					 fetchType="lazy">
+		</association>
+	</resultMap>
+	<insert id="addPurchase" parameterType="list">
+		INSERT INTO purchase(pua_id,pua_shenid,pua_shentime,pua_zhuang)
+		values
+		<foreach collection="list" item="purchases" index="index" separator="," >
+			(#{purchases.purchaseApply.pua_id},
+			#{purchases.employee.emp_id},
+			default ,
+			default
+			)
+		</foreach>
+	</insert>
+	<insert id="addPurchases" parameterType="list">
+		INSERT INTO purchase(pua_id,pua_shenid,pua_shentime,pua_zhuang)
+		values
+		<foreach collection="list" item="purchases" index="index" separator="," >
+			(#{purchases.purchaseApply.pua_id},
+			#{purchases.employee.emp_id},
+			default ,
+			'进货失败'
+			)
+		</foreach>
+	</insert>
+	<select id="queryPurchase" parameterType="Purchase" resultMap="purchasemapper">
+        SELECT pa.* FROM purchase pa   LEFT JOIN employee e ON e.emp_id=pa.pua_shenid
+  where pua_zhuang='待进货'
+    </select>
+	<select id="querycountPurchase" parameterType="Purchase" resultType="int">
+         SELECT COUNT(1) FROM  purchase pa   LEFT JOIN employee e ON e.emp_id=pa.pua_shenid
+  where pua_zhuang='待进货'
+    </select>
+	<update id="updatePurchasezhuang" parameterType="int">
+		UPDATE purchase SET pua_zhuang='进货完成'
+		<foreach collection="array" item="pid" open="where pid in(" separator="," close=");">
+			#{pid}
+		</foreach>
+
+	</update>
+	<update id="updatePurchasezhuangs" parameterType="int">
+		UPDATE purchase SET pua_zhuang='取消进货'
+		<foreach collection="array" item="pid" open="where pid in(" separator="," close=");">
+			#{pid}
+		</foreach>
+
+	</update>
+	<select id="queryPurchaseBypid" parameterType="int" resultMap="purchasemapper">
+       SELECT p.* FROM purchase p INNER JOIN warehousing w ON w.pid=p. pid
+       where p.pid=#{pid}
+    </select>
+
+</mapper>

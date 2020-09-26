@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.DrugTypeDao">
+
+	<select id="queryDrugTypeBydruid"  resultType="DrugType" parameterType="int">
+		select  DISTINCT dt.* from drugType  dt inner join   drug d  on d.dru_typeid=dt.dru_typeid
+		where d.dru_id=#{dru_id}
+	</select>
+	<select id="queryDrugType"  resultType="DrugType" parameterType="DrugType">
+		select * from drugType
+	</select>
+</mapper>

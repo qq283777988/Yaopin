@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.WarehouseoutApplyDao">
+    <resultMap id="WarehouseoutApplymapper" type="com.guigu.vo.WarehouseoutApply">
+        <id column="woa_id" property="woa_id"></id>
+        <association property="customer" javaType="com.guigu.vo.Customer"
+                     select="com.guigu.dao.CustomerDao.queryCustomerrBycusid" column="woa_cusid"
+                     fetchType="lazy">
+        </association>
+        <association property="employee" javaType="com.guigu.vo.Employee"
+                     select="com.guigu.dao.EmployeeDao.queryEmployeeByempid" column="woa_empid"
+                     fetchType="lazy">
+        </association>
+    </resultMap>
+	<insert id="addWarehouseoutApply" parameterType="WarehouseoutApply" useGeneratedKeys="true" keyColumn="woa_id" keyProperty="woa_id">
+		INSERT INTO warehouseout_apply (woa_cusid,woa_zcount,woa_zjia,woa_empid,woa_time,woa_state)
+		values(#{customer.cus_id},#{woa_zcount},#{woa_zjia},#{employee.emp_id},default ,default )
+	</insert>
+    <select id="queryWarehouseoutApplyBywoaid" parameterType="int" resultMap="WarehouseoutApplymapper">
+        select * from warehouseout_apply where woa_id=#{woa_id}
+
+    </select>
+    <select id="queryWarehouseoutApply" parameterType="WarehouseoutApply" resultMap="WarehouseoutApplymapper">
+             SELECT wa.* FROM warehouseout_apply wa LEFT JOIN customer c ON c.cus_id=wa.woa_cusid
+        LEFT JOIN employee e ON e.emp_id=woa_empid WHERE wa.woa_state='出库申请中'
+    </select>
+    <select id="querycountWarehouseoutApply" parameterType="WarehouseoutApply" resultType="int">
+         SELECT COUNT(1)FROM warehouseout_apply wa LEFT JOIN customer c ON c.cus_id=wa.woa_cusid
+        LEFT JOIN employee e ON e.emp_id=woa_empid WHERE wa.woa_state='出库申请中'
+    </select>
+    <update id="updateWarehouseoutApplyzhuang" parameterType="int">
+        UPDATE warehouseout_apply SET woa_state='出库申请成功'
+        <foreach collection="array" item="woa_id" open="where woa_id in(" separator="," close=");">
+            #{woa_id}
+        </foreach>
+
+    </update>
+    <update id="updateWarehouseoutApplyzhuangs" parameterType="int">
+        UPDATE warehouseout_apply SET woa_state='出库申请失败'
+        <foreach collection="array" item="woa_id" open="where woa_id in(" separator="," close=");">
+            #{woa_id}
+        </foreach>
+
+    </update>
+</mapper>

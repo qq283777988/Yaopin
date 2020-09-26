@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.MenrolDao">
+	<delete id="deleteMenroluByridmid" parameterType="int">
+		delete from men_rol WHERE rol_id=#{rol_id}
+	</delete>
+	<insert id="addMenurolByridmid" parameterType="list">
+		INSERT INTO men_rol(rol_id,men_id)
+		values
+		<foreach collection="list" item="menrolList" index="index" separator="," >
+			(#{menrolList.rol_id},#{menrolList.men_id})
+		</foreach>
+	</insert>
+	<select id="queryMenrolByrid" parameterType="int" resultType="menrol">
+    SELECT * FROM  men_rol  WHERE rol_id=#{rol_id}
+	</select>
+
+</mapper>

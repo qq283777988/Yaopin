@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.WarehousingDao">
+	<resultMap id="warehousingmapper" type="com.guigu.vo.Warehousing">
+		<id column="wah_id" property="wah_id"></id>
+		<association property="purchase" javaType="com.guigu.vo.Purchase"
+					 select="com.guigu.dao.PurchaseDao.queryPurchaseBypid" column="pid"
+					 fetchType="lazy">
+		</association>
+		<association property="employee" javaType="com.guigu.vo.Employee"
+					 select="com.guigu.dao.EmployeeDao.queryEmployeeByempid" column="wah_empid"
+					 fetchType="lazy">
+		</association>
+	</resultMap>
+	<insert id="addWarehousing" parameterType="list">
+		INSERT INTO warehousing(pid,wah_empid,wah_time,wah_state)
+		values
+		<foreach collection="list" item="warehousings" index="index" separator="," >
+			(#{warehousings.purchase.pid},
+			#{warehousings.employee.emp_id},
+			default ,
+			default
+			)
+		</foreach>
+	</insert>
+	<select id="queryWarehousing" parameterType="Warehousing" resultMap="warehousingmapper">
+          SELECT DISTINCT  w.* FROM warehousing w INNER JOIN employee e ON e.emp_id=w.wah_empid
+   INNER JOIN purchase pa ON pa.pid=w.pid WHERE wah_state='入库申请中'
+    </select>
+	<select id="querycountWarehousing" parameterType="Warehousing" resultType="int">
+    SELECT COUNT(*) FROM  warehousing w INNER JOIN employee e ON e.emp_id=w.wah_empid
+   INNER JOIN purchase pa ON pa.pid=w.pid WHERE wah_state='入库申请中'
+    </select>
+	<update id="updateWarehousingstate" parameterType="int">
+		UPDATE warehousing SET wah_state='入库完成'
+		<foreach collection="array" item="wah_id" open="where wah_id in(" separator="," close=");">
+			#{wah_id}
+		</foreach>
+
+	</update>
+	<update id="updateWarehousingstates" parameterType="int">
+		UPDATE warehousing SET wah_state='拒绝入库'
+		<foreach collection="array" item="wah_id" open="where wah_id in(" separator="," close=");">
+			#{wah_id}
+		</foreach>
+
+	</update>
+</mapper>

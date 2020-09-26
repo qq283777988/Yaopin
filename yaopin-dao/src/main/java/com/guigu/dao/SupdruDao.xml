@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.SupdruDao">
+    <resultMap id="supdrumapper" type="com.guigu.vo.Supdru">
+        <id column="id" property="id"></id>
+        <association property="supplier" javaType="com.guigu.vo.Supplier"
+                     select="com.guigu.dao.SupplierDao.querySupplierBysupdruid2" column="id"
+                     fetchType="lazy">
+        </association>
+        <association property="drug" javaType="com.guigu.vo.Drug"
+                     select="com.guigu.dao.DrugDao.queryDrugBysupdruid2" column="id"
+                     fetchType="lazy">
+        </association>
+    </resultMap>
+    <select id="queryallSupdruBydruid"  resultMap="supdrumapper">
+         SELECT sd.* FROM sup_dru sd  INNER JOIN drug d  ON sd.dru_id=d.dru_id
+        INNER JOIN supplier s ON s.sup_id=sd.sup_id
+        WHERE d.dru_id=#{dru_id}
+    </select>
+    <select id="queryallSupdruByid"  resultMap="supdrumapper">
+         SELECT * FROM sup_dru
+        WHERE id=#{id}
+    </select>
+    <select id="queryallSupdru" parameterType="Supdru"  resultMap="supdrumapper">
+         SELECT sd.* FROM sup_dru sd  INNER JOIN drug d  ON sd.dru_id=d.dru_id
+        INNER JOIN supplier s ON s.sup_id=sd.sup_id
+        <where>
+            <if test="supplier!=null">
+                <if test="supplier.sup_id!=0"> and sd.sup_id=${supplier.sup_id}</if>
+            </if>
+            <if test="drug!=null">
+                <if test="drug.dru_id!=0">and sd.dru_id=${drug.dru_id}</if>
+            </if>
+        </where>
+    </select>
+    <select id="querycountSupdru" parameterType="Supdru" resultType="int">
+
+        SELECT COUNT(1) FROM  sup_dru sd  INNER JOIN drug d  ON sd.dru_id=d.dru_id
+        INNER JOIN supplier s ON s.sup_id=sd.sup_id
+        <where>
+            <if test="supplier!=null">
+                <if test="supplier.sup_id!=0"> and sd.sup_id=${supplier.sup_id}</if>
+            </if>
+            <if test="drug!=null">
+                <if test="drug.dru_id!=0">and sd.dru_id=${drug.dru_id}</if>
+            </if>
+        </where>
+
+    </select>
+    <select id="querySupdruBylistsupdruid" parameterType="int"  resultMap="supdrumapper">
+         SELECT sd.* FROM sup_dru sd  INNER JOIN drug d  ON sd.dru_id=d.dru_id
+        INNER JOIN supplier s ON s.sup_id=sd.sup_id
+        <foreach collection="array" item="id" open="where id in(" separator="," close=");">
+            #{id}
+        </foreach>
+    </select>
+    <select id="querySupdruBypua_sdzhongid" parameterType="int" resultMap="supdrumapper">
+        SELECT sd.* FROM sup_dru sd
+        LEFT JOIN  purchase_applyzhong paz
+         ON  paz.sup_druid=sd.id WHERE paz.pua_sdzhongid=#{pua_sdzhongid}
+    </select>
+    <select id="querySupdruBywahid" parameterType="int" resultMap="supdrumapper">
+       	   SELECT  sd.* FROM sup_dru sd
+   INNER JOIN drug d ON sd.dru_id=d.dru_id
+   INNER JOIN purchase_applyzhong paz ON paz.sup_druid=sd.id
+   INNER JOIN purchase_apply pa ON pa.pua_id=paz.pua_id
+   INNER JOIN purchase p ON pa.pua_id=p.pua_id
+   INNER JOIN warehousing w ON w.pid=p.pid
+    WHERE w.wah_id=#{wah_id}
+    </select>
+    <select id="querySupdruBywid" parameterType="int" resultMap="supdrumapper">
+       	  SELECT   sd.* FROM sup_dru  sd
+INNER JOIN  warehouseout_applyzhong waz ON sd.sup_id=waz.sup_id AND sd.dru_id=waz.dru_id
+INNER JOIN warehouseout w ON w.`woa_id`=waz.`woa_id` WHERE w.`wid`=#{wid}
+    </select>
+    <select id="querySupdruBywiddruidwarid" parameterType="int" resultMap="supdrumapper">
+SELECT   sd.* FROM sup_dru  sd
+INNER JOIN  warehouseout_applyzhong waz ON sd.sup_id=waz.sup_id AND sd.dru_id=waz.dru_id
+INNER JOIN warehouseout w ON w.`woa_id`=waz.`woa_id`
+ WHERE w.`wid`=#{wid} AND waz.dru_id=#{dru_id} AND waz.war_id=#{war_id}
+    </select>
+    <select id="queryallSupdruBysupdruid" parameterType="int" resultMap="supdrumapper">
+   SELECT * FROM sup_dru WHERE sup_id=#{sup_id} AND dru_id=#{dru_id}
+    </select>
+</mapper>

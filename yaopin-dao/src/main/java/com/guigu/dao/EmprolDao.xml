@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.EmprolDao">
+	<insert id="addEmprolByeidrid" parameterType="list">
+		INSERT INTO emp_rol(emp_id,rol_id)
+		values
+		<foreach collection="list" item="emprolList" index="index" separator="," >
+			(#{emprolList.emp_id},#{emprolList.rol_id})
+		</foreach>
+	</insert>
+	<delete id="deleteEmprol" parameterType="int">
+		DELETE FROM emp_rol WHERE emp_id=#{emp_id};
+	</delete>
+
+
+</mapper>

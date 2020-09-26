@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.DrugJIDao">
+
+    <select id="queryDrugJIBydruid"  resultType="DrugJI" parameterType="int">
+		SELECT DISTINCT dj.* FROM drugJI dj LEFT JOIN drug d ON d.dru_jiid=dj.dru_jiid WHERE d.dru_id=#{dru_id}
+	</select>
+	<select id="queryDrugJI"  resultType="DrugJI" parameterType="DrugJI">
+		SELECT * FROM drugJI
+	</select>
+
+</mapper>

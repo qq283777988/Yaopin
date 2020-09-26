@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.RoleDao">
+
+    <select id="queryallRoles"  resultType="role">
+		select * from role
+	</select>
+	<select id="querycountRole"  resultType="int">
+		select count(*) from role
+	</select>
+	<select id="queryallRolesByempid"  resultType="Role" parameterType="int">
+		SELECT r.* FROM role r  INNER JOIN emp_rol er ON r.rol_id=er.rol_id
+		 INNER JOIN employee e  ON e.emp_id=er.emp_id
+	 	WHERE e.emp_id=#{emp_id}
+	</select>
+
+</mapper>

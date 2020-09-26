@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.WarehouseoutApplyZhongDao">
+    <resultMap id="WarehouseoutApplyZhongmapper" type="com.guigu.vo.WarehouseoutApplyZhong">
+        <id column="woa_zhongid" property="woa_zhongid"></id>
+        <association property="warehouseoutApply" javaType="com.guigu.vo.WarehouseoutApply"
+                     select="com.guigu.dao.WarehouseoutApplyDao.queryWarehouseoutApplyBywoaid" column="woa_id"
+                     fetchType="lazy">
+        </association>
+        <association property="warehouse" javaType="com.guigu.vo.Warehouse"
+                     select="com.guigu.dao.WarehouseDao.queryWarehouseBywarid" column="war_id"
+                     fetchType="lazy">
+        </association>
+        <association property="drug" javaType="com.guigu.vo.Drug"
+                     select="com.guigu.dao.DrugDao.queryDrugBydruid" column="dru_id"
+                     fetchType="lazy">
+        </association>
+        <association property="supplier" javaType="com.guigu.vo.Supplier"
+                     select="com.guigu.dao.SupplierDao.querySupplierBysupid" column="sup_id"
+                     fetchType="lazy">
+        </association>
+    </resultMap>
+	<insert id="addWarehouseoutApplyZhong" parameterType="list" useGeneratedKeys="true" keyColumn="woa_zhongid" keyProperty="woa_zhongid">
+		INSERT INTO warehouseout_applyzhong (woa_id,sup_id,dru_id,war_id,woa_zcount,woa_zjia,woa_state)
+		values
+        <foreach collection="list" item="warehouseoutApplyZhongs" index="index" separator="," >
+            (#{warehouseoutApplyZhongs.warehouseoutApply.woa_id},
+            #{warehouseoutApplyZhongs.supplier.sup_id},
+            #{warehouseoutApplyZhongs.drug.dru_id},
+            #{warehouseoutApplyZhongs.warehouse.war_id},
+            #{warehouseoutApplyZhongs.woa_zcount},
+            #{warehouseoutApplyZhongs.woa_zjia},
+            default  )
+        </foreach>
+	</insert>
+    <select id="queryWarehouseoutApplyZhongBywoaid" parameterType="int" resultMap="WarehouseoutApplyZhongmapper">
+    SELECT waz.* FROM warehouseout_applyzhong waz
+	INNER JOIN warehouseout_apply wa ON  waz.woa_id=wa.woa_id
+	WHERE wa.woa_id=#{woa_id}
+    </select>
+    <select id="queryWarehouseoutApplyZhongBywid" parameterType="int" resultMap="WarehouseoutApplyZhongmapper">
+     SELECT waz.* FROM warehouseout_applyzhong waz
+   INNER JOIN warehouseout_apply wa ON waz.woa_id=wa.woa_id
+   INNER JOIN customer c ON wa.woa_cusid=c.cus_id
+   INNER JOIN warehouseout w ON w.woa_id=wa.woa_id
+   WHERE w.wid=#{wid}
+    </select>
+    <select id="queryWarehouseoutApplyZhongBywswid" parameterType="int" resultMap="WarehouseoutApplyZhongmapper">
+    SELECT waz.* FROM warehouseout_applyzhong  waz
+    INNER JOIN warehouseout_apply wa ON waz.woa_id=wa.woa_id
+    INNER JOIN warehouseout w ON w.woa_id=wa.woa_id
+    WHERE w.wid=#{wid} AND waz.sup_id=#{sup_id} AND war_id=#{war_id} and waz.dru_id=#{dru_id}
+    </select>
+</mapper>

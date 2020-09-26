@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.DrugDao">
+ <resultMap id="drumapper" type="com.guigu.vo.Drug">
+        <id column="dru_id" property="dru_id"></id>
+     <association property="drugType" javaType="com.guigu.vo.DrugType"
+                  select="com.guigu.dao.DrugTypeDao.queryDrugTypeBydruid" column="dru_id"
+                  fetchType="lazy">
+     </association>
+     <association property="drugJI" javaType="com.guigu.vo.DrugJI"
+                  select="com.guigu.dao.DrugJIDao.queryDrugJIBydruid" column="dru_id"
+                  fetchType="lazy">
+     </association>
+        <collection property="suppliers" javaType="list" ofType="com.guigu.vo.Supplier"
+                    column="dru_id" select="com.guigu.dao.SupplierDao.queryallSupplierBydruid2"
+                    fetchType="lazy">
+        </collection>
+        <collection property="warehouses" javaType="list" ofType="com.guigu.vo.Warehouse"
+                    column="dru_id" select="com.guigu.dao.WarehouseDao.queryallWarehouseBydruid2"
+                    fetchType="lazy">
+        </collection>
+    </resultMap>
+    <select id="queryDrug" resultMap="drumapper">
+        SELECT DISTINCT d.* FROM drug d
+        INNER JOIN drugji dj ON d.dru_jiid=dj.dru_jiid
+        INNER JOIN drugType  dt ON d.dru_typeid=dt.dru_typeid
+        INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+        INNER JOIN supplier s ON s.sup_id=sd.sup_id
+        INNER JOIN war_dru wd ON wd.supdru_id=sd.id
+        INNER JOIN warehouse w ON w.war_id=wd.war_id
+        <where>
+            <if test="drug.dru_name!=null and drug.dru_name!=''"> and d.dru_name like  concat('%',#{drug.dru_name},'%')</if>
+            <if test="drug.drugType!=null">
+                <if test="drug.drugType.dru_typename!=null and drug.drugType.dru_typename!=''"> and dt.dru_typename= #{drug.drugType.dru_typename}</if>
+            </if>
+            <if test="drug.drugJI!=null">
+                <if test="drug.drugJI.dru_jiname!=null and drug.drugJI.dru_jiname!=''"> and dj.dru_jiname= #{drug.drugJI.dru_jiname}</if>
+            </if>
+            <if test="sup_id!=0">and s.sup_id=#{sup_id} </if>
+            <if test="war_id!=0">and w.war_id=#{war_id} </if>
+        </where>
+        ORDER BY d.dru_id
+    </select>
+    <select id="queryDrugg" resultMap="drumapper">
+        SELECT DISTINCT d.* FROM drug d
+        INNER JOIN drugji dj ON d.dru_jiid=dj.dru_jiid
+        INNER JOIN drugType  dt ON d.dru_typeid=dt.dru_typeid
+        INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+        INNER JOIN supplier s ON s.sup_id=sd.sup_id
+         INNER JOIN war_dru wd ON wd.supdru_id=sd.id
+        INNER JOIN warehouse w ON w.war_id=wd.war_id
+        ORDER BY d.dru_id
+    </select>
+    <select id="querycountDrug" resultType="int">
+        SELECT COUNT(1) FROM (
+        select count(*) FROM drug d
+        INNER JOIN drugji dj ON d.dru_jiid=dj.dru_jiid
+        INNER JOIN drugType  dt ON d.dru_typeid=dt.dru_typeid
+        INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+        INNER JOIN supplier s ON s.sup_id=sd.sup_id
+        INNER JOIN war_dru wd ON wd.supdru_id=sd.id
+        INNER JOIN warehouse w ON w.war_id=wd.war_id
+        <where>
+            <if test="drug.dru_name!=null and drug.dru_name!=''"> and d.dru_name like  concat('%',#{drug.dru_name},'%')</if>
+            <if test="drug.drugType!=null">
+                <if test="drug.drugType.dru_typename!=null and drug.drugType.dru_typename!=''"> and dt.dru_typename= #{drug.drugType.dru_typename}</if>
+            </if>
+            <if test="drug.drugJI!=null">
+                <if test="drug.drugJI.dru_jiname!=null and drug.drugJI.dru_jiname!=''"> and dj.dru_jiname= #{drug.drugJI.dru_jiname}</if>
+            </if>
+            <if test="sup_id!=0">and s.sup_id=#{sup_id} </if>
+            <if test="war_id!=0">and w.war_id=#{war_id} </if>
+        </where>
+        GROUP BY d.dru_name
+        ) t
+    </select>
+
+    <select id="queryDrugBysupid" parameterType="int" resultMap="drumapper">
+       	SELECT d.* FROM drug d INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+		INNER JOIN supplier s ON s.sup_id=sd.sup_id WHERE sd.sup_id=#{sup_id}
+    </select>
+    <select id="queryDrugBywarid" parameterType="int" resultMap="drumapper">
+       		SELECT d.* FROM drug d  INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+       		  INNER JOIN war_dru wd ON wd.supdru_id=sd.id
+		INNER JOIN warehouse w ON w.war_id=wd.war_id WHERE wd.war_id=#{war_id}
+    </select>
+    <select id="queryDrugBywoaid" parameterType="int" resultMap="drumapper">
+       		     SELECT  d.* FROM drug d
+   INNER JOIN warehouseout_applyzhong  w ON d.dru_id=w.dru_id
+   INNER JOIN warehouseout_apply wa ON  w.woa_id=wa.woa_id
+   WHERE wa.woa_id=${woa_id}
+    </select>
+    <select id="queryDrugBydruidduo" parameterType="list" resultMap="drumapper">
+       		SELECT DISTINCT d.* FROM drug d
+        INNER JOIN drugji dj ON d.dru_jiid=dj.dru_jiid
+        INNER JOIN drugType  dt ON d.dru_typeid=dt.dru_typeid
+        INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+        INNER JOIN supplier s ON s.sup_id=sd.sup_id
+        INNER JOIN war_dru wd ON wd.supdru_id=sd.id
+        INNER JOIN warehouse w ON w.war_id=wd.war_id
+        <foreach item="dru_id" collection="array" open=" where d.dru_id in (" separator="," close=")">
+            #{dru_id}
+        </foreach>
+
+
+    </select>
+    <select id="queryDrugBywardruid" parameterType="int" resultMap="drumapper">
+       	 SELECT d.* FROM drug d INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+       		  INNER JOIN war_dru wd ON wd.supdru_id=sd.id WHERE wd.id=#{id}
+    </select>
+    <select id="queryDrugBywardruid2" parameterType="int" resultMap="drumapper2">
+       	SELECT d.* FROM drug d INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+       		  INNER JOIN war_dru wd ON wd.supdru_id=sd.id WHERE wd.id=#{id}
+    </select>
+    <select id="queryDrugBysupdruid" parameterType="int" resultMap="drumapper">
+       	 SELECT d.* FROM drug d INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id WHERE sd.id=#{id}
+    </select>
+    <select id="queryDrugBysupdruid2" parameterType="int" resultMap="drumapper2">
+       	 SELECT d.* FROM drug d INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id WHERE sd.id=#{id}
+    </select>
+
+
+    <select id="queryDrugBydruid" parameterType="int" resultMap="drumapper2">
+       		SELECT * FROM drug WHERE dru_id=#{dru_id}
+    </select>
+    <select id="queryDrugBysupid2" parameterType="int" resultMap="drumapper2">
+       	SELECT d.* FROM drug d INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+		INNER JOIN supplier s ON s.sup_id=sd.sup_id WHERE sd.sup_id=#{sup_id}
+    </select>
+    <select id="queryDrugBywarid2" parameterType="int" resultMap="drumapper2">
+       		SELECT d.* FROM drug d INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+       		  INNER JOIN war_dru wd ON wd.supdru_id=sd.id
+		INNER JOIN warehouse w ON w.war_id=wd.war_id WHERE wd.war_id=#{war_id}
+    </select>
+    <select id="queryDrugBywahid" parameterType="int" resultMap="drumapper2">
+       	   SELECT  d.* FROM drug d
+   INNER JOIN sup_dru sd ON sd.dru_id=d.dru_id
+   INNER JOIN purchase_applyzhong paz ON paz.sup_druid=sd.id
+   INNER JOIN purchase_apply pa ON pa.pua_id=paz.pua_id
+   INNER JOIN purchase p ON pa.pua_id=p.pua_id
+   INNER JOIN warehousing w ON w.pid=p.pid
+    WHERE w.wah_id=#{wah_id}
+    </select>
+    <select id="queryDrugBywid" parameterType="int" resultMap="drumapper2">
+       	    SELECT * FROM drug d
+INNER JOIN  warehouseout_applyzhong waz ON d .dru_id=waz.dru_id
+INNER JOIN warehouseout w ON w.`woa_id`=waz.`woa_id` WHERE w.`wid`=#{wid}
+    </select>
+
+    <resultMap id="drumapper2" type="com.guigu.vo.Drug">
+        <id column="dru_id" property="dru_id"></id>
+        <association property="drugType" javaType="com.guigu.vo.DrugType"
+                     select="com.guigu.dao.DrugTypeDao.queryDrugTypeBydruid" column="dru_typeid"
+                     fetchType="lazy">
+        </association>
+        <association property="drugJI" javaType="com.guigu.vo.DrugJI"
+                     select="com.guigu.dao.DrugJIDao.queryDrugJIBydruid" column="dru_jiid"
+                     fetchType="lazy">
+        </association>
+    </resultMap>
+
+</mapper>

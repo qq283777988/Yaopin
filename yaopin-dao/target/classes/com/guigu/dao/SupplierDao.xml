@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.SupplierDao">
+	<resultMap id="supmapper" type="com.guigu.vo.Supplier">
+		<id column="sup_id" property="sup_id"></id>
+		<collection property="drugs" javaType="list" ofType="com.guigu.vo.Drug"
+					column="sup_id" select="com.guigu.dao.DrugDao.queryDrugBysupid2"
+					fetchType="lazy">
+		</collection>
+	</resultMap>
+    <select id="queryallSupplierBydruid"  resultMap="supmapper" parameterType="int">
+		 SELECT sd.* FROM sup_dru sd  INNER JOIN drug d  ON sd.dru_id=d.dru_id
+ INNER JOIN supplier s ON s.sup_id=sd.sup_id
+ WHERE d.dru_id=#{dru_id}
+	</select>
+	<select id="querySupplierBysupdruid"  resultMap="supmapper" parameterType="int">
+		 SELECT s.* FROM supplier s INNER JOIN sup_dru sd ON sd.sup_id=s.sup_id WHERE sd.id=#{id}
+	</select>
+	<select id="querySupplier" parameterType="Supplier" resultMap="supmapper">
+		select * FROM supplier
+		<where>
+			<if test="sup_name!=null"> and sup_name like  concat('%',#{sup_name},'%')</if>
+		</where>
+		ORDER BY sup_id
+	</select>
+	<select id="querySupplierr" parameterType="Supplier" resultMap="supmapper">
+		select * FROM supplier
+
+
+	</select>
+	<select id="querycountSupplier" parameterType="Supplier" resultType="int">
+		select count(*) FROM supplier
+		<where>
+			<if test="sup_name!=null"> and sup_name like  concat('%',#{sup_name},'%')</if>
+		</where>
+	</select>
+
+	<resultMap id="supmapper2" type="com.guigu.vo.Supplier">
+		<id column="sup_id" property="sup_id"></id>
+	</resultMap>
+	<select id="queryallSupplierBydruid2"  resultMap="supmapper2" parameterType="int">
+		select s.* from supplier s
+		INNER JOIN sup_dru sd ON s.sup_id=sd.sup_id
+		inner join  drug d on d.dru_id=sd.dru_id
+		where d.dru_id=#{dru_id}
+	</select>
+	<select id="querySupplierBysupdruid2"  resultMap="supmapper2" parameterType="int">
+		 SELECT s.* FROM supplier s INNER JOIN sup_dru sd ON sd.sup_id=s.sup_id WHERE sd.id=#{id}
+	</select>
+	<select id="querySupplierBysupid"  resultMap="supmapper2" parameterType="int">
+		 SELECT * FROM supplier  WHERE sup_id=#{sup_id}
+	</select>
+</mapper>

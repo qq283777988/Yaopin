@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guigu.dao.PurchaseApplyZhongDao">
+	<resultMap id="pazhongmapper" type="com.guigu.vo.PurchaseApplyZhong">
+		<id column="pua_sdzhongid" property="pua_sdzhongid"></id>
+		<association property="purchaseApply" javaType="com.guigu.vo.PurchaseApply"
+					 select="com.guigu.dao.PurchaseApplyDao.queryPurchaseApplyBypua_sdzhongid" column="pua_sdzhongid"
+					 fetchType="lazy">
+		</association>
+		<association property="supdru" javaType="com.guigu.vo.Supdru"
+					 select="com.guigu.dao.SupdruDao.querySupdruBypua_sdzhongid" column="pua_sdzhongid"
+					 fetchType="lazy">
+		</association>
+	</resultMap>
+
+	<insert id="addPurchaseApplyZhong" parameterType="list" useGeneratedKeys="true" keyColumn="pua_sdzhongid" keyProperty="pua_sdzhongid">
+		INSERT INTO purchase_applyzhong(pua_id,sup_druid,pua_zcount,pua_zjia,pua_state)
+		values
+		<foreach collection="list" item="purchaseApplyZhongs" index="index" separator="," >
+			(#{purchaseApplyZhongs.purchaseApply.pua_id},
+			#{purchaseApplyZhongs.supdru.id},
+			#{purchaseApplyZhongs.pua_zcount},
+			#{purchaseApplyZhongs.pua_zjia},
+			default )
+		</foreach>
+	</insert>
+	<select id="queryPurchaseApplyZhongBypuaid" parameterType="int" resultMap="pazhongmapper">
+      SELECT  paz.* FROM  purchase_applyzhong paz
+
+        INNER JOIN purchase_apply pa ON pa.pua_id=paz.pua_id
+        WHERE paz.pua_id=#{pua_id}
+    </select>
+	<select id="queryPurchaseApplyZhongBywahid" parameterType="int" resultMap="pazhongmapper">
+
+	SELECT  paz.* FROM  purchase_applyzhong paz
+        INNER JOIN sup_dru sd ON  paz.sup_druid=sd.id
+        INNER JOIN drug d ON sd.dru_id=d.dru_id
+        INNER JOIN purchase_apply pa ON pa.pua_id=paz.pua_id
+	INNER JOIN purchase p ON pa.pua_id=p.pua_id
+	INNER JOIN warehousing w ON w.pid=p.pid
+	WHERE w.wah_id=#{wah_id}
+    </select>
+
+</mapper>
